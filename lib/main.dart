@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Views/Authentication/loogin_page.dart';
+import 'package:recycle_application/Views/Interface/home_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -17,7 +18,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: HomePage(),
     );
   }
 }

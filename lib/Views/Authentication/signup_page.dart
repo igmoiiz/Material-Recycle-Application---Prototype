@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Controllers/input_controllers.dart';
+import 'package:recycle_application/Controllers/database_helper.dart';
+import 'package:recycle_application/Views/Interface/home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,6 +15,8 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   InputController inputControllers = InputController();
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  bool _isLoading = false;
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -20,31 +24,73 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   void dispose() {
-   inputControllers.emailController.dispose();
-   inputControllers.usernameController.dispose();
+    inputControllers.emailController.dispose();
+    inputControllers.usernameController.dispose();
     inputControllers.passwordController.dispose();
     inputControllers.confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _handleSignUp() {
+  Future<void> _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Please agree to the terms and conditions'),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
-      // Handle sign up logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Account created for ${inputControllers.usernameController.text}'),
-          backgroundColor: Colors.green,
-        ),
-      );
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Check if email already exists
+        final emailExists = await _databaseHelper.isEmailExists(
+          inputControllers.emailController.text,
+        );
+
+        if (emailExists) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Email already exists'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        // Create new user
+        await _databaseHelper.insertUser(
+          inputControllers.usernameController.text,
+          inputControllers.emailController.text,
+          inputControllers.passwordController.text,
+        );
+
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -102,10 +148,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   Text(
                     'Join us today',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                   SizedBox(height: 32),
 
@@ -184,7 +227,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
                         return 'Please enter a valid email';
                       }
                       return null;
@@ -232,7 +277,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       if (value.length < 8) {
                         return 'Password must be at least 8 characters';
                       }
-                      if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)',
+                      ).hasMatch(value)) {
                         return 'Password must contain uppercase, lowercase and number';
                       }
                       return null;
@@ -255,7 +302,8 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            _isConfirmPasswordVisible =
+                                !_isConfirmPasswordVisible;
                           });
                         },
                       ),
@@ -345,10 +393,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       Text(
                         "Already have an account? ",
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                       TextButton(
                         onPressed: _handleLogin,

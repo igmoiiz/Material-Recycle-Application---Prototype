@@ -1,7 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Controllers/input_controllers.dart';
+import 'package:recycle_application/Controllers/database_helper.dart';
 import 'package:recycle_application/Views/Authentication/signup_page.dart';
+import 'package:recycle_application/Views/Interface/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +16,8 @@ class _LoginPageState extends State<LoginPage> {
   InputController inputControllers = InputController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -24,17 +28,48 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      // Handle login logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Login attempted with ${inputControllers.emailController.text}',
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final user = await _databaseHelper.getUser(
+          inputControllers.emailController.text,
+          inputControllers.passwordController.text,
+        );
+
+        if (user != null) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid email or password'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -205,7 +240,6 @@ class _LoginPageState extends State<LoginPage> {
                               builder: (context) => const SignUpPage(),
                             ),
                           );
-                          
                         },
                         child: Text(
                           'Sign Up',
