@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Controllers/input_controllers.dart';
+import 'package:recycle_application/Views/Authentication/signup_screen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -28,7 +29,9 @@ class _LoginPageState extends State<LoginPage> {
       // Handle login logic here
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Login attempted with ${inputControllers.emailController.text}'),
+          content: Text(
+            'Login attempted with ${inputControllers.emailController.text}',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -196,12 +199,18 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Sign up clicked'),
-                              backgroundColor: Colors.green,
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignUpPage(),
                             ),
                           );
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   SnackBar(
+                          //     content: Text('Sign up clicked'),
+                          //     backgroundColor: Colors.green,
+                          //   ),
+                          // );
                         },
                         child: Text(
                           'Sign Up',
