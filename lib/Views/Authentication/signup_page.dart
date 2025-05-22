@@ -65,16 +65,21 @@ class _SignUpPageState extends State<SignUpPage> {
         }
 
         // Create new user
-        await _databaseHelper.insertUser(
-          inputControllers.usernameController.text,
-          inputControllers.emailController.text,
-          inputControllers.passwordController.text,
-        );
+        await _databaseHelper.insertUser({
+          'username': inputControllers.usernameController.text,
+          'email': inputControllers.emailController.text,
+          'password': inputControllers.passwordController.text,
+          'points': 0,
+        });
 
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    HomePage(userEmail: inputControllers.emailController.text),
+          ),
         );
       } catch (e) {
         if (!mounted) return;
