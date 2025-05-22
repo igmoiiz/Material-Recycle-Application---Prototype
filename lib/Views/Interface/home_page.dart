@@ -100,9 +100,9 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.recycling, size: 64, color: Colors.white),
-                    SizedBox(height: 16),
+                    SizedBox(height: 10),
                     Text(
-                      'EcoPoints',
+                      'Trashure',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
