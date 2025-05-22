@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Controllers/input_controllers.dart';
-import 'package:recycle_application/Views/Authentication/signup_screen.dart';
+import 'package:recycle_application/Views/Authentication/signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -205,12 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                               builder: (context) => const SignUpPage(),
                             ),
                           );
-                          // ScaffoldMessenger.of(context).showSnackBar(
-                          //   SnackBar(
-                          //     content: Text('Sign up clicked'),
-                          //     backgroundColor: Colors.green,
-                          //   ),
-                          // );
+                          
                         },
                         child: Text(
                           'Sign Up',

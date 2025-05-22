@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:recycle_application/Views/Authentication/login_scrreen.dart';
+import 'package:recycle_application/Views/Authentication/loogin_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -15,6 +15,9 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: LoginPage());
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: LoginPage(),
+    );
   }
 }
