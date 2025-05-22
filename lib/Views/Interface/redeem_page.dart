@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recycle_application/Controllers/database_helper.dart';
 
 class RedeemItem {
   final String name;
@@ -17,11 +18,13 @@ class RedeemItem {
 class RedeemPage extends StatefulWidget {
   final int userPoints;
   final Function(int) onPointsDeducted;
+  final String userEmail;
 
   const RedeemPage({
     super.key,
     required this.userPoints,
     required this.onPointsDeducted,
+    required this.userEmail,
   });
 
   @override
@@ -29,6 +32,36 @@ class RedeemPage extends StatefulWidget {
 }
 
 class _RedeemPageState extends State<RedeemPage> {
+  late int _currentPoints;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPoints = widget.userPoints;
+  }
+
+  Future<void> _handleRedeem(RedeemItem item) async {
+    if (_currentPoints >= item.pointsRequired) {
+      final newPoints = _currentPoints - item.pointsRequired;
+      await _databaseHelper.updateUserPoints(widget.userEmail, newPoints);
+      setState(() {
+        _currentPoints = newPoints;
+      });
+      widget.onPointsDeducted(item.pointsRequired);
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Successfully redeemed ${item.name}! Points deducted: ${item.pointsRequired}',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
   final List<RedeemItem> _redeemItems = [
     RedeemItem(
       name: 'Burger',
@@ -133,7 +166,7 @@ class _RedeemPageState extends State<RedeemPage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color:
-                          widget.userPoints >= item.pointsRequired
+                          _currentPoints >= item.pointsRequired
                               ? Colors.green[50]
                               : Colors.red[50],
                       borderRadius: BorderRadius.circular(8),
@@ -149,12 +182,12 @@ class _RedeemPageState extends State<RedeemPage> {
                           ),
                         ),
                         Text(
-                          '${widget.userPoints}',
+                          '$_currentPoints',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color:
-                                widget.userPoints >= item.pointsRequired
+                                _currentPoints >= item.pointsRequired
                                     ? Colors.green
                                     : Colors.red,
                           ),
@@ -172,19 +205,8 @@ class _RedeemPageState extends State<RedeemPage> {
                       ),
                       ElevatedButton(
                         onPressed:
-                            widget.userPoints >= item.pointsRequired
-                                ? () {
-                                  Navigator.pop(context);
-                                  widget.onPointsDeducted(item.pointsRequired);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Successfully redeemed ${item.name}! Points deducted: ${item.pointsRequired}',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                }
+                            _currentPoints >= item.pointsRequired
+                                ? () => _handleRedeem(item)
                                 : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
@@ -215,7 +237,7 @@ class _RedeemPageState extends State<RedeemPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'Points: ${widget.userPoints}',
+                'Points: $_currentPoints',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -236,7 +258,7 @@ class _RedeemPageState extends State<RedeemPage> {
         itemCount: _redeemItems.length,
         itemBuilder: (context, index) {
           final item = _redeemItems[index];
-          final canRedeem = widget.userPoints >= item.pointsRequired;
+          final canRedeem = _currentPoints >= item.pointsRequired;
 
           return Card(
             elevation: 4,

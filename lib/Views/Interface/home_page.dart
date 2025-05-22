@@ -281,6 +281,7 @@ class _HomePageState extends State<HomePage> {
         builder:
             (context) => RedeemPage(
               userPoints: _totalPoints,
+              userEmail: widget.userEmail,
               onPointsDeducted: (points) async {
                 final newPoints = _totalPoints - points;
                 await _updatePoints(newPoints);
