@@ -16,8 +16,13 @@ class RedeemItem {
 
 class RedeemPage extends StatefulWidget {
   final int userPoints;
+  final Function(int) onPointsDeducted;
 
-  const RedeemPage({super.key, required this.userPoints});
+  const RedeemPage({
+    super.key,
+    required this.userPoints,
+    required this.onPointsDeducted,
+  });
 
   @override
   State<RedeemPage> createState() => _RedeemPageState();
@@ -170,6 +175,7 @@ class _RedeemPageState extends State<RedeemPage> {
                             widget.userPoints >= item.pointsRequired
                                 ? () {
                                   Navigator.pop(context);
+                                  widget.onPointsDeducted(item.pointsRequired);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(

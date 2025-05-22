@@ -260,7 +260,15 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RedeemPage(userPoints: _totalPoints),
+        builder:
+            (context) => RedeemPage(
+              userPoints: _totalPoints,
+              onPointsDeducted: (points) {
+                setState(() {
+                  _totalPoints -= points;
+                });
+              },
+            ),
       ),
     );
   }
