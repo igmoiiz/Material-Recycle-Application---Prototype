@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Models/recycling_material.dart';
+import 'package:recycle_application/Views/Authentication/loogin_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +19,14 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _amountController.dispose();
     super.dispose();
+  }
+
+  void _handleLogout() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+      (route) => false,
+    );
   }
 
   void _showMaterialDialog(RecyclingMaterial material) {
@@ -81,7 +90,47 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue[600]),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.recycling, size: 64, color: Colors.white),
+                    SizedBox(height: 16),
+                    Text(
+                      'EcoPoints',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Recycle & Earn Rewards',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: _handleLogout,
+              ),
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
+        // automaticallyImplyLeading: false,
         title: const Text('Recycle & Earn Points'),
         actions: [
           Center(
