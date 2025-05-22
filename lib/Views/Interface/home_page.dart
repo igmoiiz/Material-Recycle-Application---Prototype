@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:recycle_application/Models/recycling_material.dart';
 import 'package:recycle_application/Views/Authentication/loogin_page.dart';
+import 'package:recycle_application/Views/Interface/redeem_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -60,23 +61,207 @@ class _HomePageState extends State<HomePage> {
                   if (_amountController.text.isNotEmpty) {
                     final amount = double.parse(_amountController.text);
                     final points = (amount * material.pointsPerKg).round();
-                    setState(() {
-                      _totalPoints += points;
-                    });
                     _amountController.clear();
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Added $points points!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                    _showDeliveryOptions(points, material.name, amount);
                   }
                 },
                 child: const Text('Submit'),
               ),
             ],
           ),
+    );
+  }
+
+  void _showDeliveryOptions(int points, String materialName, double amount) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text(
+              'Choose Delivery Option',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'You will earn $points points for $amount kg of $materialName',
+                  style: const TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Self Delivery Card
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _handleSelfDelivery(points);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.green),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.directions_walk,
+                                size: 48,
+                                color: Colors.green[700],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Self Delivery',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Drop at nearest center',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green[600],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Rider Pickup Card
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _handlePickupRequest(points);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.blue),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.delivery_dining,
+                                size: 48,
+                                color: Colors.blue[700],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Request Pickup',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'We\'ll collect from you',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue[600],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.grey[800],
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _handleSelfDelivery(int points) {
+    setState(() {
+      _totalPoints += points;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Added $points points! Please deliver the material to our nearest collection center.',
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'OK',
+          onPressed: () {},
+          textColor: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _handlePickupRequest(int points) {
+    setState(() {
+      _totalPoints += points;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Added $points points! A rider will contact you shortly to schedule the pickup.',
+        ),
+        backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'OK',
+          onPressed: () {},
+          textColor: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToRedeem() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RedeemPage(userPoints: _totalPoints),
+      ),
     );
   }
 
@@ -116,6 +301,11 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.card_giftcard),
+              title: const Text('Redeem Points'),
+              onTap: _navigateToRedeem,
             ),
             const Spacer(),
             Padding(
