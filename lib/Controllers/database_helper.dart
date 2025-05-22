@@ -4,6 +4,8 @@ import 'package:path/path.dart';
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
+  static const String _databaseName = 'recycle_app.db';
+  static const int _databaseVersion = 1;
 
   factory DatabaseHelper() => _instance;
 
@@ -16,8 +18,12 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'recycle_app.db');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    final path = await getDatabasesPath();
+    return await openDatabase(
+      join(path, _databaseName),
+      version: _databaseVersion,
+      onCreate: _onCreate,
+    );
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -25,44 +31,42 @@ class DatabaseHelper {
       CREATE TABLE users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
+        email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         points INTEGER DEFAULT 0
       )
     ''');
   }
 
-  Future<int> insertUser(String username, String email, String password) async {
+  Future<int> insertUser(Map<String, dynamic> user) async {
     final db = await database;
-    return await db.insert('users', {
-      'username': username,
-      'email': email,
-      'password': password,
-      'points': 0,
-    });
+    return await db.insert('users', user);
   }
 
   Future<Map<String, dynamic>?> getUser(String email, String password) async {
     final db = await database;
-    List<Map<String, dynamic>> results = await db.query(
+    final List<Map<String, dynamic>> maps = await db.query(
       'users',
       where: 'email = ? AND password = ?',
       whereArgs: [email, password],
     );
-    return results.isNotEmpty ? results.first : null;
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
   }
 
   Future<bool> isEmailExists(String email) async {
     final db = await database;
-    List<Map<String, dynamic>> results = await db.query(
+    final List<Map<String, dynamic>> maps = await db.query(
       'users',
       where: 'email = ?',
       whereArgs: [email],
     );
-    return results.isNotEmpty;
+    return maps.isNotEmpty;
   }
 
-  Future<void> updatePoints(String email, int points) async {
+  Future<void> updateUserPoints(String email, int points) async {
     final db = await database;
     await db.update(
       'users',
@@ -70,5 +74,18 @@ class DatabaseHelper {
       where: 'email = ?',
       whereArgs: [email],
     );
+  }
+
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
   }
 }

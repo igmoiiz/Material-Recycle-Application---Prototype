@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:recycle_application/Models/recycling_material.dart';
 import 'package:recycle_application/Views/Authentication/loogin_page.dart';
 import 'package:recycle_application/Views/Interface/redeem_page.dart';
+import 'package:recycle_application/Controllers/database_helper.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String userEmail;
+
+  const HomePage({super.key, required this.userEmail});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -15,11 +18,28 @@ class _HomePageState extends State<HomePage> {
   String _selectedCategory = 'All';
   final TextEditingController _amountController = TextEditingController();
   int _totalPoints = 0;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadUserPoints();
+  }
+
+  Future<void> _loadUserPoints() async {
+    final user = await _databaseHelper.getUserByEmail(widget.userEmail);
+    if (user != null) {
+      setState(() {
+        _totalPoints = user['points'] as int;
+      });
+    }
+  }
+
+  Future<void> _updatePoints(int points) async {
+    await _databaseHelper.updateUserPoints(widget.userEmail, points);
+    setState(() {
+      _totalPoints = points;
+    });
   }
 
   void _handleLogout() {
@@ -216,10 +236,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _handleSelfDelivery(int points) {
-    setState(() {
-      _totalPoints += points;
-    });
+  void _handleSelfDelivery(int points) async {
+    final newPoints = _totalPoints + points;
+    await _updatePoints(newPoints);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -236,10 +255,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _handlePickupRequest(int points) {
-    setState(() {
-      _totalPoints += points;
-    });
+  void _handlePickupRequest(int points) async {
+    final newPoints = _totalPoints + points;
+    await _updatePoints(newPoints);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -263,10 +281,9 @@ class _HomePageState extends State<HomePage> {
         builder:
             (context) => RedeemPage(
               userPoints: _totalPoints,
-              onPointsDeducted: (points) {
-                setState(() {
-                  _totalPoints -= points;
-                });
+              onPointsDeducted: (points) async {
+                final newPoints = _totalPoints - points;
+                await _updatePoints(newPoints);
               },
             ),
       ),

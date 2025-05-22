@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
@@ -44,7 +44,12 @@ class _LoginPageState extends State<LoginPage> {
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
+            MaterialPageRoute(
+              builder:
+                  (context) => HomePage(
+                    userEmail: inputControllers.emailController.text,
+                  ),
+            ),
           );
         } else {
           if (!mounted) return;
